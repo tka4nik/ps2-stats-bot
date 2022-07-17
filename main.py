@@ -1,6 +1,7 @@
 # bot.py
 import os
 import random
+import pprint
 
 import requests
 import discord
@@ -10,6 +11,7 @@ from discord.ext import commands
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
+SERVICE_ID = os.getenv('SERVICE_ID')
 
 intents = discord.Intents.default()  # Gets the default intents from discord.
 intents.members = True  # enables members intents on the bot.
@@ -76,14 +78,41 @@ async def roll(ctx, number_of_dice: int, number_of_sides: int):
     await ctx.send(', '.join(dice))
 
 
-@bot.command(name='continents', help='Continents')
-async def open_continents(ctx, server_id=None):
-    r = requests.get('https://census.daybreakgames.com/s:9641566/get/ps2:v2/character_name/')
-    if not (server_id):
-        await ctx.send("Emerald: Oshur")
-        return
-    print(r.text)
-    print(r.text)
-
+@bot.command(name='c', help='Open continents')
+async def open_continents(ctx, server=None):
+    indar_wg = ['2201', '2202', '2203']
+    hossin_wg = ['4230', '4240', '4250']
+    amerish_wg = ['6001', '6002', '6003']
+    esamir_wg = ['18029', '18030', '18062']
+    servers = {17: 'Emerald', 1: 'Connery', 13: 'Cobalt', 10: 'Miller', 40: 'Soltech'}
+    for server_id in servers.keys():
+        r = requests.get('https://census.daybreakgames.com/s:{0}/get/ps2:v2/map?world_id={1}&zone_ids=2,4,6,8'.format(SERVICE_ID, server_id))
+        request = r.json()
+        indar = set()
+        esamir = set()
+        amerish = set()
+        hossin = set()
+        for continent in request['map_list']:
+            for region in continent['Regions']['Row']:
+                if region['RowData']['RegionId'] in indar_wg:
+                    indar.add(int(region['RowData']['FactionId']))
+                if region['RowData']['RegionId'] in hossin_wg:
+                    hossin.add(region['RowData']['FactionId'])
+                if region['RowData']['RegionId'] in amerish_wg:
+                    amerish.add(region['RowData']['FactionId'])
+                if region['RowData']['RegionId'] in esamir_wg:
+                    esamir.add(region['RowData']['FactionId'])
+        if len(indar) == 3:
+            print("{0}: Indar".format(servers[server_id]))
+            await ctx.send("{0}: Indar".format(servers[server_id]))
+        if len(esamir) == 3:
+            print("{0}: Esamir".format(servers[server_id]))
+            await ctx.send("{0}: Esamir".format(servers[server_id]))
+        if len(amerish) == 3:
+            print("{0}: Amerish".format(servers[server_id]))
+            await ctx.send("{0}: Amerish".format(servers[server_id]))
+        if len(hossin) == 3:
+            print("{0}: Hossin".format(servers[server_id]))
+            await ctx.send("{0}: Hossin".format(servers[server_id]))
 
 bot.run(TOKEN)

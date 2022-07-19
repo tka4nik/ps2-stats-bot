@@ -1,11 +1,11 @@
 # bot.py
 import os
 import random
-import pprint
-
+import time
 import requests
 import discord
 from dotenv import load_dotenv
+import cProfile
 
 from discord.ext import commands
 
@@ -16,36 +16,6 @@ SERVICE_ID = os.getenv('SERVICE_ID')
 intents = discord.Intents.default()  # Gets the default intents from discord.
 intents.members = True  # enables members intents on the bot.
 
-'''client = discord.Client(intents=intents)
-
-
-@client.event
-async def on_ready():
-    print(
-        f'{client.user} has connected to Discord!\n'
-    )
-
-@client.event
-async def on_member_join(member):
-    print(member)
-    await member.create_dm()
-    await member.dm_channel.send(
-        f'Hi {member.name}, welcome to my Discord server!'
-    )
-
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-
-    print("The message's content was", message.content, message.author.name)
-
-    if message.content == '!alerts':
-        response = "Fuck you"
-        await message.channel.send(response)
-
-client.run(TOKEN)
-'''
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 
@@ -77,42 +47,37 @@ async def roll(ctx, number_of_dice: int, number_of_sides: int):
     ]
     await ctx.send(', '.join(dice))
 
+def get_server_data(servers):
+    servers_data = {}
+    for server_id in servers.keys():
+        servers_data[server_id] = requests.get(
+            'https://census.daybreakgames.com/s:{0}/get/ps2:v2/map?world_id={1}&zone_ids=2,4,6,8'.format(SERVICE_ID,
+                                                                                                         server_id)
+        ).json()
+    return servers_data
 
 @bot.command(name='c', help='Open continents')
-async def open_continents(ctx, server=None):
-    indar_wg = ['2201', '2202', '2203']
-    hossin_wg = ['4230', '4240', '4250']
-    amerish_wg = ['6001', '6002', '6003']
-    esamir_wg = ['18029', '18030', '18062']
+async def open_continents(ctx):
+    start_time = time.time()
+    continents = {2: ['2201', '2202', '2203'], 4: ['4230', '4240', '4250'], 6: ['6001', '6002', '6003'],
+                  8: ['18029', '18030', '18062']}
+    zones = {2: 'Indar', 4: "Hossin", 6: "Amerish", 8: "Esamir"}
     servers = {17: 'Emerald', 1: 'Connery', 13: 'Cobalt', 10: 'Miller', 40: 'Soltech'}
-    for server_id in servers.keys():
-        r = requests.get('https://census.daybreakgames.com/s:{0}/get/ps2:v2/map?world_id={1}&zone_ids=2,4,6,8'.format(SERVICE_ID, server_id))
-        request = r.json()
-        indar = set()
-        esamir = set()
-        amerish = set()
-        hossin = set()
+    output = ""
+    servers_data = get_server_data(servers)
+
+    print("---Requests: %s seconds ---" % (time.time() - start_time))
+    for server_id in servers_data:
+        request = servers_data[server_id]
         for continent in request['map_list']:
+            factions = set()
             for region in continent['Regions']['Row']:
-                if region['RowData']['RegionId'] in indar_wg:
-                    indar.add(int(region['RowData']['FactionId']))
-                if region['RowData']['RegionId'] in hossin_wg:
-                    hossin.add(region['RowData']['FactionId'])
-                if region['RowData']['RegionId'] in amerish_wg:
-                    amerish.add(region['RowData']['FactionId'])
-                if region['RowData']['RegionId'] in esamir_wg:
-                    esamir.add(region['RowData']['FactionId'])
-        if len(indar) == 3:
-            print("{0}: Indar".format(servers[server_id]))
-            await ctx.send("{0}: Indar".format(servers[server_id]))
-        if len(esamir) == 3:
-            print("{0}: Esamir".format(servers[server_id]))
-            await ctx.send("{0}: Esamir".format(servers[server_id]))
-        if len(amerish) == 3:
-            print("{0}: Amerish".format(servers[server_id]))
-            await ctx.send("{0}: Amerish".format(servers[server_id]))
-        if len(hossin) == 3:
-            print("{0}: Hossin".format(servers[server_id]))
-            await ctx.send("{0}: Hossin".format(servers[server_id]))
+                if region['RowData']['RegionId'] in continents[int(continent['ZoneId'])]:
+                    factions.add(int(region['RowData']['FactionId']))
+            if len(factions) == 3:
+                output += "{0}: {1}\n".format(servers[server_id], zones[int(continent['ZoneId'])])
+    print(output)
+    print("---Parsing: %s seconds ---" % (time.time() - start_time))
+    await ctx.send(output)
 
 bot.run(TOKEN)

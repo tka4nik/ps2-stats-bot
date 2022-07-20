@@ -1,0 +1,12 @@
+11:49PM on July 20, 2022 Command raised an exception: HTTPException: 400 Bad Request (error code: 50006): Cannot send an empty message
+11:49PM on July 20, 2022 Command raised an exception: HTTPException: 400 Bad Request (error code: 50006): Cannot send an empty message
+11:49PM on July 20, 2022 Command "casd" is not found
+11:49PM on July 20, 2022 Command raised an exception: HTTPException: 400 Bad Request (error code: 50006): Cannot send an empty message
+12:32AM on July 21, 2022 Command raised an exception: AssertionError: 
+12:32AM on July 21, 2022 Command raised an exception: AssertionError: 
+12:33AM on July 21, 2022 Command raised an exception: AssertionError: 
+12:42AM on July 21, 2022 Command raised an exception: AssertionError: 
+12:42AM on July 21, 2022 Command raised an exception: AssertionError: 
+01:03AM on July 21, 2022 Command raised an exception: TypeError: get_data() missing 1 required positional argument: 'servers'
+01:04AM on July 21, 2022 Command raised an exception: RuntimeError: asyncio.run() cannot be called from a running event loop
+01:31AM on July 21, 2022 Command "C" is not found

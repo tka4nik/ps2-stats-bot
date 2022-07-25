@@ -1,9 +1,9 @@
 # bot.py
 import os
 
-import random
 import time
 import datetime
+import typing
 
 import discord
 from dotenv import load_dotenv
@@ -44,7 +44,7 @@ async def on_command_error(ctx, error):
             await ctx.send(
                 'No continents are open at the moment/the servers are down!')  # If the error message contains code 400, that means the message was empty or the servers are down
         else:
-            await ctx.send('Something wrong has happened!')
+            await ctx.send('Something went wrong!')
     with open("log/err.log", "a+") as f:
         f.write(datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y") + " " + str(
             error) + "\n")  # Logging the errors into the error folder
@@ -79,23 +79,34 @@ def get_server_data_dummy(servers):
     return ""
 
 
+def server_to_id_converter(argument):
+    servers = {'Emerald': 17, 'Connery': 1, 'Cobalt': 13, 'Miller': 10, 'Soltech': 40}
+    if servers.get(argument):
+        return servers.get(argument)
+    return None
+
+
 # =======================================
 # Command that gets open continents for each server
 @bot.command(name='c', help='Open continents')
-async def open_continents(ctx):
+async def open_continents(ctx, server: typing.Optional[server_to_id_converter] = 0):
     start_time = time.time()  # Timing for testing
-
+    print(server)
     continents = {2: ['2201', '2202', '2203'], 4: ['4230', '4240', '4250'], 6: ['6001', '6002', '6003'],
                   8: ['18029', '18030', '18062'],
                   344: ['18303', '18304', '18305']}  # Array of region ids of all warpgates for each continent
     zones = {2: 'Indar', 4: "Hossin", 6: "Amerish", 8: "Esamir", 344: "Oshur"}  # Array of ids for each zone
+
     servers = {17: 'Emerald', 1: 'Connery', 13: 'Cobalt', 10: 'Miller', 40: 'Soltech'}  # Array of ids for each world
+    if server:
+        tmp = {server: servers[server]}
+        servers = tmp
     output = ""
 
     # servers_data = get_server_data_dummy(servers)
     servers_data = await get_data(servers)  # Getting server data
     print("---Requests: %s seconds ---" % (time.time() - start_time))
-    print(servers_data)
+    #      print(servers_data)
 
     # start_time = time.time()
     # Parsing # =======================================

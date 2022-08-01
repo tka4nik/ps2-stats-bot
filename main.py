@@ -5,6 +5,7 @@ import time
 import datetime
 
 import disnake
+import requests
 from disnake.ext import commands
 from dotenv import load_dotenv
 
@@ -19,6 +20,8 @@ DISCORD_GUILD_ID = os.getenv('DISCORD_GUILD_ID')
 bot = commands.InteractionBot(command_prefix='!', intents=disnake.Intents.all(), sync_commands_debug=True,
                               test_guilds=[651509483436113931])
 client = disnake.Client()
+
+
 # =======================================#
 
 
@@ -28,31 +31,11 @@ async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
 
 
-'''
-# Errors handler
-@bot.event
-async def on_command_error(ctx, error):
-    print(error)
-    print(ctx.command)
-    print(disnake.HTTPException)
-    if isinstance(error, disnake.ext.commands.errors.CommandNotFound):  # Command not found error handler
-        await ctx.send('Command not found!')
-    if isinstance(error, disnake.ext.commands.CommandInvokeError):
-        if "400" in str(error):
-            await ctx.send(
-                'No continents are open at the moment/the servers are down!')  # If the error message contains code 400, that means the message was empty or the servers are down
-        else:
-            await ctx.send('Something went wrong!')
-    with open("log/err.log", "a+") as f:
-        f.write(datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y") + " " + str(
-            error) + "\n")  # Logging the errors into the error folder
-'''
-
-
 # Getting all links into 1 array
 def get_tasks(session, servers):
     tasks = [session.get(
-        "https://census.daybreakgames.com/s:{0}/get/ps2:v2/map?world_id={1}&zone_ids=2,4,6,8,344".format(SERVICE_ID, server_id)
+        "https://census.daybreakgames.com/s:{0}/get/ps2:v2/map?world_id={1}&zone_ids=2,4,6,8,344".format(SERVICE_ID,
+                                                                                                         server_id)
     ) for server_id in servers.keys()]
     return tasks
 
@@ -61,6 +44,21 @@ def get_tasks(session, servers):
 async def get_data(servers):
     async with aiohttp.ClientSession() as session:
         tasks = get_tasks(session, servers)
+        responses = await asyncio.gather(*tasks)
+        results = {}
+        for response, server_id in zip(responses, servers):
+            results[server_id] = await response.json()
+        return results
+
+
+def get_population_tasks(session, servers, url):
+    tasks = [session.get(url.format(server_id)) for server_id in servers.keys()]
+    return tasks
+
+
+async def get_population_data(servers, url):
+    async with aiohttp.ClientSession() as session:
+        tasks = get_population_tasks(session, servers, url)
         responses = await asyncio.gather(*tasks)
         results = {}
         for response, server_id in zip(responses, servers):
@@ -92,7 +90,8 @@ def parser(servers_data, servers, continents, zones):
             factions = set()  # A set to determine if all warpgates have the same faction id (which would mean that the continent is locked)
             for region in continent['Regions']['Row']:
                 if region['RowData']['RegionId'] in \
-                        continents[int(continent['ZoneId'])]:  # If region_id is in the array of 3 region_ids of warpgates
+                        continents[
+                            int(continent['ZoneId'])]:  # If region_id is in the array of 3 region_ids of warpgates
                     # of the current continent_id
                     factions.add(int(region['RowData']['FactionId']))  # Adding the faction_id to the set
             if len(factions) == 3:
@@ -134,20 +133,59 @@ async def continents(
         tmp = {server: servers[server]}
         servers = tmp
 
-    #servers_data = get_server_data_dummy(servers)
+    # servers_data = get_server_data_dummy(servers)
     servers_data = await get_data(servers)  # Getting server data
     print("---Requests: %s seconds ---" % (time.time() - start_time))
 
     # Parsing
-    output = parser(servers_data,servers,continents, zones)
+    output = parser(servers_data, servers, continents, zones)
 
     print(output)
-    with open("log/cmd.log", "a+") as f: # Successful command execution logging
+    with open("log/cmd.log", "a+") as f:  # Successful command execution logging
         f.write(datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y") + "\n" + str(server) + "\n")
         f.write("---Requests: %s seconds ---" % (time.time() - start_time) + "\n")
         f.write(output + "\n")
 
     await inter.followup.send(output)
+
+
+@bot.slash_command(name="pop", guild_ids=[651509483436113931])
+async def pop(
+        inter,
+        server: str = commands.Param(
+            default=0,
+            converter=server_to_id_converter,
+            choices={"Emerald": "Emerald",
+                     "Connery": "Connery",
+                     "Cobalt": "Cobalt",
+                     "Miller": "Miller",
+                     "Soltech": "Soltech"
+                     }
+        )):
+    await inter.response.defer()
+    servers = {17: 'Emerald', 1: 'Connery', 13: 'Cobalt', 10: 'Miller', 40: 'Soltech'}
+    urls = ["https://ps2.fisu.pw/api/population/?world={0}", "https://wt.honu.pw/api/population/{0}", "https://api.voidwell.com/ps2/worldstate/{0}?platform=pc"]
+
+    if server:
+        tmp = {server: servers[server]}
+        servers = tmp
+
+
+    population_data = []
+    for url in urls:
+        population_data.append(await get_population_data(servers, url))
+
+    ''''
+    for server_id in servers.keys():
+        res = requests.get("https://ps2.fisu.pw/api/population/?world={0}".format(server_id))
+        population_data[server_id] = res.json()['result'][0]['vs'] \
+                                     + res.json()['result'][0]['nc'] \
+                                     + res.json()['result'][0]['tr'] \
+                                     + res.json()['result'][0]['ns']
+    '''
+
+    print(population_data)
+    #await inter.followup.send(population_data)
 
 
 @continents.error

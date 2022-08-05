@@ -1,4 +1,4 @@
 aiohttp==3.8.1
-disnake==2.5.2
+disnake
 python-dotenv==0.20.0
 requests

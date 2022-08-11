@@ -23,3 +23,16 @@
 03:08PM on July 27, 2022 Command "c" is not found
 03:09PM on July 27, 2022 Command "c" is not found
 03:09PM on July 27, 2022 Command "continets" is not found
+01:11AM on August 04, 2022 ClientConnectionError
+01:12AM on August 04, 2022 ClientConnectionError: voidwell API is not responding
+09:22PM on August 04, 2022 Command raised an exception: TypeError: 'NoneType' object is not subscriptable
+12:38AM on August 05, 2022 Command raised an exception: ClientOSError: [WinError 64] ”казанное сетевое им€ более недоступно
+09:05PM on August 05, 2022 Command raised an exception: ContentTypeError: 0, message='Attempt to decode JSON with unexpected mimetype: text/html; charset=utf-8', url=URL('https://wt.honu.pw/api/population/17')
+09:55PM on August 05, 2022 Command raised an exception: ContentTypeError: 0, message='Attempt to decode JSON with unexpected mimetype: text/html; charset=utf-8', url=URL('https://wt.honu.pw/api/population/17')
+10:57PM on August 05, 2022 Command raised an exception: AttributeError: 'NoneType' object has no attribute 'url'
+10:58PM on August 05, 2022 Command raised an exception: AttributeError: 'NoneType' object has no attribute 'url'
+10:58PM on August 05, 2022 Command raised an exception: AttributeError: 'NoneType' object has no attribute 'url'
+11:18PM on August 05, 2022 Command raised an exception: AttributeError: 'NoneType' object has no attribute 'url'
+11:18PM on August 05, 2022 Command raised an exception: AttributeError: 'NoneType' object has no attribute 'url'
+11:18PM on August 05, 2022 Command raised an exception: AttributeError: 'NoneType' object has no attribute 'url'
+01:11AM on August 06, 2022 Command raised an exception: AttributeError: 'InvokableSlashCommand' object has no attribute 'get_data'

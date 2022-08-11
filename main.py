@@ -10,12 +10,12 @@ import requests
 from disnake.ext import commands
 from dotenv import load_dotenv
 
-import aiohttp
-import asyncio
-
+import websocket
 # =======================================#
 from population import get_population_data
 import continents as cont
+import ow_registration
+
 # =======================================# Configuration
 load_dotenv('settings/.env')
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -23,8 +23,6 @@ SERVICE_ID = os.getenv('SERVICE_ID')
 DISCORD_GUILD_ID = os.getenv('DISCORD_GUILD_ID')
 bot = commands.InteractionBot(command_prefix='!', intents=disnake.Intents.all(), sync_commands_debug=True,
                               test_guilds=[1005185836201033778])
-
-
 # =======================================#
 
 
@@ -54,8 +52,8 @@ async def continents(
     print(server)
 
     continents_list = {2: ['2201', '2202', '2203'], 4: ['4230', '4240', '4250'],
-                  6: ['6001', '6002', '6003'], 8: ['18029', '18030', '18062'],
-                  344: ['18303', '18304', '18305']}  # Array of region ids of all warpgates for each continent
+                       6: ['6001', '6002', '6003'], 8: ['18029', '18030', '18062'],
+                       344: ['18303', '18304', '18305']}  # Array of region ids of all warpgates for each continent
     zones = {2: 'Indar', 4: "Hossin", 6: "Amerish", 8: "Esamir", 344: "Oshur"}  # Array of ids for each zone
     servers = {17: 'Emerald', 1: 'Connery', 13: 'Cobalt', 10: 'Miller', 40: 'Soltech'}  # Array of ids for each world
 
@@ -129,6 +127,56 @@ async def twanswate_error(ctx, error):
     with open("log/err.log", "a+") as f:
         f.write(datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y") + " " + str(
             error) + "\n")  # Logging the errors into the error folder
+
+
+@bot.slash_command(name="ow", guild_ids=[1005185836201033778])
+async def ow(inter, server: str = commands.Param(
+    default=0,
+    converter=cont.server_to_id_converter,
+    choices={"Emerald": "Emerald",
+             "Connery": "Connery",
+             "Cobalt": "Cobalt",
+             "Miller": "Miller",
+             "Soltech": "Soltech"
+             }
+)):
+    await inter.response.defer()  # Request takes too long to respond
+
+    ow_reg = requests.get("https://census.lithafalcon.cc/get/ps2/outfit_war_registration?c:limit=1000").json()
+    outfit_id_dic = {}
+    outfit_id_world_dic = {}
+    for outfit in ow_reg['outfit_war_registration_list']:
+        outfit_id_dic[outfit['outfit_id']] = [outfit['member_signup_count'], outfit['status']]
+        print(outfit['outfit_id'], outfit['member_signup_count'])
+
+    outfits_list = await ow_registration.get_data(outfit_id_dic)
+    print(outfits_list)
+
+    output = ""
+    print(server)
+    for outfit in outfit_id_dic:
+        if server:
+            if int(outfits_list[outfit][1]) == server:
+                if outfit_id_dic[outfit][1] == "Full":
+                    output += "**" + str(outfits_list[outfit][0]) + ": " + str(outfit_id_dic[outfit][0]) + "**"
+                else:
+                    output += str(outfits_list[outfit][0]) + ": " + str(outfit_id_dic[outfit][0])
+        else:
+            if outfit_id_dic[outfit][1] == "Full":
+                output += "**" + str(outfits_list[outfit][0]) + ": " + str(outfit_id_dic[outfit][0]) + "**"
+            else:
+                output += str(outfits_list[outfit][0]) + ": " + str(outfit_id_dic[outfit][0])
+        output += '\n'
+
+    if output:
+        embed = disnake.Embed(
+            title="",
+            description=output,
+            colour=0xF0C43F,
+        )
+        await inter.followup.send(embed=embed)
+    else:
+        await inter.followup.send("No data found")
 
 
 bot.run(TOKEN)

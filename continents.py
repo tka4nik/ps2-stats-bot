@@ -1,6 +1,5 @@
 import aiohttp
 import asyncio
-import disnake
 from dotenv import load_dotenv
 import os
 

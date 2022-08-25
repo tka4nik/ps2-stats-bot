@@ -28,3 +28,26 @@ async def get_data(outfits):
             r = await response.json()
             results[outfit] = [r['outfit_list'][0]['alias'], r['outfit_list'][0]['LeaderWorld']['world_id']]
         return results
+
+
+# Parser for the latest outfit dictionary (id: tag, count)
+def parser(outfit_id_dic, outfits_list, server):
+    output = ""
+    for outfit in outfit_id_dic:
+        if server:
+            if int(outfits_list[outfit][1]) == server:
+                if outfit_id_dic[outfit][1] == "Full":
+                    output += "**" + str(outfits_list[outfit][0]) + ": " + str(outfit_id_dic[outfit][0]) + "**"
+                    output += '\n'
+                else:
+                    output += str(outfits_list[outfit][0]) + ": " + str(outfit_id_dic[outfit][0])
+                    output += '\n'
+
+        else:
+            if outfit_id_dic[outfit][1] == "Full":
+                output += "**" + str(outfits_list[outfit][0]) + ": " + str(outfit_id_dic[outfit][0]) + "**"
+                output += '\n'
+            else:
+                output += str(outfits_list[outfit][0]) + ": " + str(outfit_id_dic[outfit][0])
+                output += '\n'
+    return output

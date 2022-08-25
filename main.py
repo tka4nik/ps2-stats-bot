@@ -5,9 +5,11 @@ import random
 import time
 import datetime
 
-import disnake
+import discord
+from discord import option, commands
 import requests
-from disnake.ext import commands
+
+
 from dotenv import load_dotenv
 
 import websocket
@@ -21,8 +23,7 @@ load_dotenv('settings/.env')
 TOKEN = os.getenv('DISCORD_TOKEN')
 SERVICE_ID = os.getenv('SERVICE_ID')
 DISCORD_GUILD_ID = os.getenv('DISCORD_GUILD_ID')
-bot = commands.InteractionBot(command_prefix='!', intents=disnake.Intents.all(), sync_commands_debug=True,
-                              test_guilds=[1005185836201033778])
+bot = discord.Bot(debug_guilds=[1005185836201033778], intents=discord.Intents.all())
 # =======================================#
 
 
@@ -32,24 +33,36 @@ async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
 
 
+# Converter of "servers" parameter of "continents" command. Takes a string and returns an id of the server,
+# or None if its not a valid server name
+def server_to_id_converter(argument):
+    servers = {'Emerald': 17, 'Connery': 1, 'Cobalt': 13, 'Miller': 10, 'Soltech': 40}
+    if servers.get(argument):
+        return servers.get(argument)
+    return None
+
+
 # Command that gets open continents for each server
 @bot.slash_command(name="continents", description="Open Continents", guild_ids=[1005185836201033778])
-async def continents(
-        inter,
-        server: str = commands.Param(
-            default=0,
-            converter=cont.server_to_id_converter,
-            choices={"Emerald": "Emerald",
-                     "Connery": "Connery",
-                     "Cobalt": "Cobalt",
-                     "Miller": "Miller",
-                     "Soltech": "Soltech"
-                     }
-        )):
+@option(
+    "server",
+    description="Pick a server",
+    required=False,
+    default='',
+    choices={"Emerald": "Emerald",
+             "Connery": "Connery",
+             "Cobalt": "Cobalt",
+             "Miller": "Miller",
+             "Soltech": "Soltech"
+             },
+
+)
+async def continents(inter, server: str):
     await inter.response.defer()  # Request takes too long to respond
 
     start_time = time.time()  # Timing for testing
     print(server)
+    server = server_to_id_converter(server)
 
     continents_list = {2: ['2201', '2202', '2203'], 4: ['4230', '4240', '4250'],
                        6: ['6001', '6002', '6003'], 8: ['18029', '18030', '18062'],
@@ -80,11 +93,11 @@ async def continents(
 
 
 @continents.error
-async def continents_error(ctx, error):
+async def on_application_command_error(ctx: discord.ApplicationContext, error: discord.DiscordException):
     print(error)
-    if isinstance(error, commands.BadArgument):
+    if isinstance(error, discord.InvalidArgument):
         await ctx.send("I could not find that continent...")
-    if isinstance(error, commands.CommandInvokeError):
+    if isinstance(error, discord.ApplicationCommandInvokeError):
         await ctx.send("Oops, something went wrong...")
     with open("log/err.log", "a+") as f:
         f.write(datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y") + " " + str(
@@ -122,51 +135,45 @@ async def twasnwate(inter):
 
 @twasnwate.error
 async def twanswate_error(ctx, error):
-    if isinstance(error, commands.CommandInvokeError):
+    if isinstance(error, discord.ApplicationCommandInvokeError):
         await ctx.send("No UwU's above")
     with open("log/err.log", "a+") as f:
         f.write(datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y") + " " + str(
             error) + "\n")  # Logging the errors into the error folder
 
 
+# Command that get the list of registered OW outfits
 @bot.slash_command(name="ow", guild_ids=[1005185836201033778])
-async def ow(inter, server: str = commands.Param(
-    default=0,
-    converter=cont.server_to_id_converter,
+@option(
+    "server",
+    description="Pick a server",
+    required=False,
+    default='',
     choices={"Emerald": "Emerald",
              "Connery": "Connery",
              "Cobalt": "Cobalt",
              "Miller": "Miller",
              "Soltech": "Soltech"
-             }
-)):
-    await inter.response.defer()  # Request takes too long to respond
+             },
 
-    ow_reg = requests.get("https://census.lithafalcon.cc/get/ps2/outfit_war_registration?c:limit=1000").json()
+)
+async def ow(inter, server: str):
+    await inter.response.defer()  # Request takes too long to respond
+    server = server_to_id_converter(server)
+
+    ow_reg = requests.get("https://census.lithafalcon.cc/get/ps2/outfit_war_registration?c:limit=1000").json() # Getting the list of signups from Falcon's API
     outfit_id_dic = {}
     outfit_id_world_dic = {}
-    for outfit in ow_reg['outfit_war_registration_list']:
+
+    for outfit in ow_reg['outfit_war_registration_list']: # Creates a dictionary of `outfit_id: registered members count`
         outfit_id_dic[outfit['outfit_id']] = [outfit['member_signup_count'], outfit['status']]
         print(outfit['outfit_id'], outfit['member_signup_count'])
+    print(outfit_id_dic)
 
-    outfits_list = await ow_registration.get_data(outfit_id_dic)
+    outfits_list = await ow_registration.get_data(outfit_id_dic) # Gets a dictionary of `outfit_id: [tag, count]`
     print(outfits_list)
 
-    output = ""
-    print(server)
-    for outfit in outfit_id_dic:
-        if server:
-            if int(outfits_list[outfit][1]) == server:
-                if outfit_id_dic[outfit][1] == "Full":
-                    output += "**" + str(outfits_list[outfit][0]) + ": " + str(outfit_id_dic[outfit][0]) + "**"
-                else:
-                    output += str(outfits_list[outfit][0]) + ": " + str(outfit_id_dic[outfit][0])
-        else:
-            if outfit_id_dic[outfit][1] == "Full":
-                output += "**" + str(outfits_list[outfit][0]) + ": " + str(outfit_id_dic[outfit][0]) + "**"
-            else:
-                output += str(outfits_list[outfit][0]) + ": " + str(outfit_id_dic[outfit][0])
-        output += '\n'
+    output = ow_registration.parser(outfit_id_dic, outfits_list, server) # Parser
 
     if output:
         embed = disnake.Embed(

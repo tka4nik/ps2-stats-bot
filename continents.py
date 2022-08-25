@@ -34,15 +34,6 @@ def get_server_data_dummy(servers):
     return ""
 
 
-# Converter of "servers" parameter of "continents" command. Takes a string and returns an id of the server,
-# or None if its not a valid server name
-def server_to_id_converter(inter, argument):
-    servers = {'Emerald': 17, 'Connery': 1, 'Cobalt': 13, 'Miller': 10, 'Soltech': 40}
-    if servers.get(argument):
-        return servers.get(argument)
-    return None
-
-
 # Parser for the map collection request data
 def parser(servers_data, servers, continents, zones, population_data):
     output = ""

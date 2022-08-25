@@ -1,5 +1,4 @@
 import aiohttp
-import disnake
 import asyncio
 import datetime
 import time

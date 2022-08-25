@@ -17,7 +17,6 @@ import websocket
 from population import get_population_data
 import continents as cont
 import ow_registration
-
 # =======================================# Configuration
 load_dotenv('settings/.env')
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -104,6 +103,7 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
             error) + "\n")  # Logging the errors into the error folder
 
 
+# UwU
 @bot.slash_command(name="twanswate", description="UwU", guild_ids=[1005185836201033778])
 async def twasnwate(inter):
     channel = bot.get_channel(1005185837060849720)
@@ -120,7 +120,7 @@ async def twasnwate(inter):
                 last_message_content = last_message_content[:i] + "w" + last_message_content[i + 1:]
                 i += 1
     print(last_message_content)
-    embed = disnake.Embed(
+    embed = discord.Embed(
         title="",
         description=last_message_content,
         colour=0xF0C43F,
@@ -176,7 +176,7 @@ async def ow(inter, server: str):
     output = ow_registration.parser(outfit_id_dic, outfits_list, server) # Parser
 
     if output:
-        embed = disnake.Embed(
+        embed = discord.Embed(
             title="",
             description=output,
             colour=0xF0C43F,

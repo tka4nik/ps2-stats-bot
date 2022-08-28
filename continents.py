@@ -42,14 +42,13 @@ def parser(servers_data, servers, continents, zones, population_data):
         for continent in request['map_list']:
             factions = set()  # A set to determine if all warpgates have the same faction id (which would mean that the continent is locked)
             for region in continent['Regions']['Row']:
-                if region['RowData']['RegionId'] in \
-                        continents[
-                            int(continent['ZoneId'])]:  # If region_id is in the array of 3 region_ids of warpgates
-                    # of the current continent_id
+                # If region_id is in the array of 3 region_ids of warpgates of the current continent_id
+                if region['RowData']['RegionId'] in continents[int(continent['ZoneId'])]:
                     factions.add(int(region['RowData']['FactionId']))  # Adding the faction_id to the set
             if len(factions) == 3:
                 output += " {0},".format(
-                    zones[int(continent['ZoneId'])])  # If there are 3 different factions controlling the warpgates,
+                    zones[int(continent['ZoneId'])]
+                )  # If there are 3 different factions controlling the warpgates,
                 # we are adding the server and continent ot the output
         output = output[:-1:]
         output += ";\nOnline: {0}".format(population_data[server_id])

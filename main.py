@@ -42,7 +42,7 @@ def server_to_id_converter(argument):
 
 
 # Command that gets open continents for each server
-@bot.slash_command(name="continents", description="Open Continents", guild_ids=[1005185836201033778])
+@bot.slash_command(name="continents", description="Open Continents")
 @option(
     "server",
     description="Pick a server",
@@ -104,7 +104,7 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
 
 
 # UwU
-@bot.slash_command(name="twanswate", description="UwU", guild_ids=[1005185836201033778])
+@bot.slash_command(name="twanswate", description="UwU")
 async def twasnwate(inter):
     channel = bot.get_channel(1005185837060849720)
     print((await channel.fetch_message(channel.last_message_id)).content)
@@ -116,7 +116,6 @@ async def twasnwate(inter):
     for i in range(len(last_message_content)):
         if last_message_content[i] not in letters:
             if random.random() > 0.8:
-                print(last_message_content[i])
                 last_message_content = last_message_content[:i] + "w" + last_message_content[i + 1:]
                 i += 1
     print(last_message_content)
@@ -143,7 +142,7 @@ async def twanswate_error(ctx, error):
 
 
 # Command that get the list of registered OW outfits
-@bot.slash_command(name="ow", guild_ids=[1005185836201033778])
+@bot.slash_command(name="ow")
 @option(
     "server",
     description="Pick a server",

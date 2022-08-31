@@ -41,7 +41,6 @@ def parser(outfit_id_dic, outfits_list, server):
                 else:
                     output += str(outfits_list[outfit][0]) + ": " + str(outfit_id_dic[outfit][0])
                     output += '\n'
-
         else:
             if outfit_id_dic[outfit][1] == "Full":
                 output += "**" + str(outfits_list[outfit][0]) + ": " + str(outfit_id_dic[outfit][0]) + "**"

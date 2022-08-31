@@ -4,6 +4,7 @@ import random
 
 import time
 import datetime
+from collections import OrderedDict
 
 import discord
 from discord import option, commands
@@ -17,6 +18,7 @@ import websocket
 from population import get_population_data
 import continents as cont
 import ow_registration
+import ow_matchups
 # =======================================# Configuration
 load_dotenv('settings/.env')
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -76,6 +78,7 @@ async def continents(inter, server: str):
 
     # servers_data = get_server_data_dummy(servers)
     servers_data = await cont.get_data(servers)  # Getting server data
+    print(servers_data)
     population_data = await get_population_data(server, servers)
     print("---Requests: %s seconds ---" % (time.time() - start_time))
 
@@ -95,9 +98,9 @@ async def continents(inter, server: str):
 async def on_application_command_error(ctx: discord.ApplicationContext, error: discord.DiscordException):
     print(error)
     if isinstance(error, discord.InvalidArgument):
-        await ctx.send("I could not find that continent...")
+        await ctx.followup.send("I could not find that continent...")
     if isinstance(error, discord.ApplicationCommandInvokeError):
-        await ctx.send("Oops, something went wrong...")
+        await ctx.followup.send("Oops, something went wrong...")
     with open("log/err.log", "a+") as f:
         f.write(datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y") + " " + str(
             error) + "\n")  # Logging the errors into the error folder
@@ -185,4 +188,37 @@ async def ow(inter, server: str):
         await inter.followup.send("No data found")
 
 
+@bot.slash_command(name="matchups")
+async def matchaps(inter):
+    await inter.response.defer()
+
+    cobalt_round_id = 524038850792655688 #Hardcoded round id for Falcon's api
+    data = requests.get("https://census.lithafalcon.cc/get/ps2/outfit_war_ranking?round_id={0}&c:limit=999".format(cobalt_round_id)).json()['outfit_war_ranking_list']
+    print(data)
+
+    outfits = {}
+    for item in data:
+        outfits[item['ranking_parameters']['GlobalRank']] = item['outfit_id']
+    outfits_aliases = await ow_matchups.get_data(outfits) # Get aliases for each outfit id
+
+    # A messy way to get a sorted by rank dictionary of `GlobalRank: [Alias, faction_id]`
+    data_dict = {}
+    for item in data:
+        data_dict[int(item['ranking_parameters']['GlobalRank'])] = [outfits_aliases[item['outfit_id']], int(item['faction_id'])]
+    data_dict_sorted = OrderedDict(sorted(data_dict.items()))
+    print(data_dict_sorted)
+
+    #Parser
+    output = ow_matchups.parser(data_dict_sorted)
+    print(output)
+
+    await inter.followup.send(output)
+
+
+
+
+
+
+
+    #data_dict[item['ranking_parameters']['GlobalRank']] = [item['outfit_id'], item['faction_id']]
 bot.run(TOKEN)

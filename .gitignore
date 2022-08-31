@@ -316,6 +316,7 @@ pip-selfcheck.json
 # Mine
 /settings
 /log
+/.idea
 
 
 # End of https://www.gitignore.io/api/git,python,pycharm

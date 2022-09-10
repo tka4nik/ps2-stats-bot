@@ -21,12 +21,15 @@ from population import get_population_data
 import continents as cont
 import ow_registration
 import ow_matchups
+
 # =======================================# Configuration
 load_dotenv('settings/.env')
 TOKEN = os.getenv('DISCORD_TOKEN')
 SERVICE_ID = os.getenv('SERVICE_ID')
 DISCORD_GUILD_ID = os.getenv('DISCORD_GUILD_ID')
 bot = discord.Bot(debug_guilds=[1005185836201033778], intents=discord.Intents.all())
+
+
 # =======================================#
 
 
@@ -164,19 +167,21 @@ async def ow(inter, server: str):
     await inter.response.defer()  # Request takes too long to respond
     server = server_to_id_converter(server)
 
-    ow_reg = requests.get("https://census.lithafalcon.cc/get/ps2/outfit_war_registration?c:limit=1000").json() # Getting the list of signups from Falcon's API
+    ow_reg = requests.get(
+        "https://census.lithafalcon.cc/get/ps2/outfit_war_registration?c:limit=1000").json()  # Getting the list of signups from Falcon's API
     outfit_id_dic = {}
     outfit_id_world_dic = {}
 
-    for outfit in ow_reg['outfit_war_registration_list']: # Creates a dictionary of `outfit_id: registered members count`
+    for outfit in ow_reg[
+        'outfit_war_registration_list']:  # Creates a dictionary of `outfit_id: registered members count`
         outfit_id_dic[outfit['outfit_id']] = [outfit['member_signup_count'], outfit['status']]
         print(outfit['outfit_id'], outfit['member_signup_count'])
     print(outfit_id_dic)
 
-    outfits_list = await ow_registration.get_data(outfit_id_dic) # Gets a dictionary of `outfit_id: [tag, count]`
+    outfits_list = await ow_registration.get_data(outfit_id_dic)  # Gets a dictionary of `outfit_id: [tag, count]`
     print(outfits_list)
 
-    output = ow_registration.parser(outfit_id_dic, outfits_list, server) # Parser
+    output = ow_registration.parser(outfit_id_dic, outfits_list, server)  # Parser
 
     if output:
         embed = discord.Embed(
@@ -193,8 +198,9 @@ async def ow(inter, server: str):
 async def matchaps(inter):
     await inter.response.defer()
     print(time.time())
-    data = requests.get("https://census.lithafalcon.cc/get/ps2/outfit_war_match?world_id=13&c:hide=match_id,outfit_war_id,world_id&c:sort=order&start_time=%3E{0}"
-                        .format(round(time.time()))).json()['outfit_war_match_list']
+    data = requests.get(
+        "https://census.lithafalcon.cc/get/ps2/outfit_war_match?world_id=13&c:hide=match_id,outfit_war_id,world_id&c:sort=order&start_time=%3E{0}"
+        .format(round(time.time()))).json()['outfit_war_match_list']
     print(data)
 
     outfits = []
@@ -203,7 +209,7 @@ async def matchaps(inter):
         outfits.append(item['outfit_b_id'])
     outfits_aliases = []
     try:
-        outfits_aliases = await ow_matchups.get_data(outfits) # Get aliases for each outfit id
+        outfits_aliases = await ow_matchups.get_data(outfits)  # Get aliases for each outfit id
     except aiohttp.ClientOSError as e:
         inter.followup.send("Something is wrong..")
         with open("log/err.log", "a+") as f:
@@ -218,20 +224,19 @@ async def matchaps(inter):
         output += factions[int(item['outfit_a_faction_id'])] + " " + outfits_aliases[item['outfit_a_id']]
         output += "\t vs. \t"
         output += factions[int(item['outfit_b_faction_id'])] + " " + outfits_aliases[item['outfit_b_id']]
-        output += ":  --  at a time:  `" + str(time.strftime("%a, %d %b %Y %H:%M", time.gmtime(int(item['start_time'])))) + "`"
+        output += ":  --  at a time:  `" + str(
+            time.strftime("%a, %d %b %Y %H:%M", time.gmtime(int(item['start_time'])))) + "`"
         print(time.strftime("%a, %d %b %Y %H:%M", time.gmtime(int(item['start_time']))))
         output += "\n"
 
-    #Parser
-    #output = ow_matchups.parser(data_dict_sorted)
     print(output)
-
     await inter.followup.send(output)
 
 
 @tasks.loop(count=1)
 async def census_watchtower():
     await item_added_updater()
+
 
 async def item_added_updater():
     print("doing stuff")
@@ -241,35 +246,38 @@ async def item_added_updater():
 
     @client.trigger(auraxium.event.ItemAdded, worlds=[13])
     async def itemadded_action(event):
-        #print(event)
         if event.context == "GuildBankWithdrawal":
             char_id = event.character_id
-            character_outfit_data = requests.get("https://census.daybreakgames.com/s:{0}/get/ps2:v2/outfit_member?character_id={1}&c:join=outfit^show:alias".format(SERVICE_ID, char_id)).json()["outfit_member_list"][0]
+            character_outfit_data = requests.get(
+                "https://census.daybreakgames.com/s:{0}/get/ps2:v2/outfit_member?character_id={1}&c:join=outfit^show:alias&c:join=character^show:name".format(
+                    SERVICE_ID, char_id)).json()["outfit_member_list"][0]
 
             if character_outfit_data["outfit_id_join_outfit"]["alias"] == "H":
-                item_name = requests.get("https://census.daybreakgames.com/s:{0}/get/ps2:v2/item?item_id={1}&c:show=name".format(SERVICE_ID, event.item_id)).json()["item_list"][0]["name"]["en"]
-                output = output = "**" + item_name + "**" + " was used by " + character_outfit_data["outfit_id_join_outfit"]["alias"]
+                item_name = requests.get(
+                    "https://census.daybreakgames.com/s:{0}/get/ps2:v2/item?item_id={1}&c:show=name".format(SERVICE_ID, event.item_id)).json()["item_list"][0]["name"]["en"]
+                output = datetime.datetime.now().strftime("%d/%m/%y %H:%M:%S") + ";item_name" + ";" + character_outfit_data["outfit_id_join_outfit"]["alias"] + ";" + character_outfit_data["character_id_join_character"]["name"]["first"]
+                discord_output = datetime.datetime.now().strftime("%H:%M") + "; " + item_name + "; called by " + character_outfit_data["character_id_join_character"]["name"]["first"]
                 print(output)
-                await channel.send(output)
 
-                with open("log/ws.log", "a+") as f:
-                    f.write(datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y") + " " + str(output) + "\n")
+                await channel.send(discord_output)
+
+                log_output(output, "log/ws.log", "%d/%m/%y %H:%M:%S")
 
             if character_outfit_data["outfit_id_join_outfit"]["alias"] == "RMIS":
                 item_name = requests.get(
                     "https://census.daybreakgames.com/s:{0}/get/ps2:v2/item?item_id={1}&c:show=name".format(SERVICE_ID,
                                                                                                             event.item_id)).json()[
                     "item_list"][0]["name"]["en"]
-                output = output = "**" + item_name + "**" + " was used by " + character_outfit_data["outfit_id_join_outfit"]["alias"]
+                print(character_outfit_data)
+                output = ";" + item_name + ";" + character_outfit_data["outfit_id_join_outfit"]["alias"] + ";" + character_outfit_data["character_id_join_character"]["name"]["first"]
+                discord_output = datetime.datetime.now().strftime("%H:%M") + "; " + item_name + "; called by " + character_outfit_data["character_id_join_character"]["name"]["first"]
                 print(output)
-                with open("log/ws.log", "a+") as f:
-                    f.write(datetime.datetime.now().strftime("%d/%m/%y %H:%M:%S.%f") + " " + str(output) + "\n")  # Logging the errors into the error folder
+                log_output(output, "log/ws.log", "%d/%m/%y;%H:%M:%S")
 
-    """"
-    @client.trigger(auraxium.event.MetagameEvent)
-    async def metagame_event(event):
-        print(event)
-    """
+
+def log_output(output, file, format):
+    with open(file, "a+") as f:
+        f.write(datetime.datetime.now().strftime(format) + str(output) + "\n")
 
 
 @bot.slash_command(name="websocket_start")
@@ -285,7 +293,4 @@ async def websocket_stop(inter):
     await inter.response.send_message("Websocket is stopped!")
 
 
-
-
-    #data_dict[item['ranking_parameters']['GlobalRank']] = [item['outfit_id'], item['faction_id']]
 bot.run(TOKEN)

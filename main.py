@@ -6,10 +6,12 @@ import time
 import datetime
 from collections import OrderedDict
 
+import auraxium
 import discord
 from discord import option, commands
 import requests
-
+import aiohttp
+from discord.ext import tasks
 
 from dotenv import load_dotenv
 
@@ -157,7 +159,6 @@ async def twanswate_error(ctx, error):
              "Miller": "Miller",
              "Soltech": "Soltech"
              },
-
 )
 async def ow(inter, server: str):
     await inter.response.defer()  # Request takes too long to respond
@@ -191,31 +192,97 @@ async def ow(inter, server: str):
 @bot.slash_command(name="matchups")
 async def matchaps(inter):
     await inter.response.defer()
-
-    cobalt_round_id = 524038850792655688 #Hardcoded round id for Falcon's api
-    data = requests.get("https://census.lithafalcon.cc/get/ps2/outfit_war_ranking?round_id={0}&c:limit=999".format(cobalt_round_id)).json()['outfit_war_ranking_list']
+    print(time.time())
+    data = requests.get("https://census.lithafalcon.cc/get/ps2/outfit_war_match?world_id=13&c:hide=match_id,outfit_war_id,world_id&c:sort=order&start_time=%3E{0}"
+                        .format(round(time.time()))).json()['outfit_war_match_list']
     print(data)
 
-    outfits = {}
+    outfits = []
     for item in data:
-        outfits[item['ranking_parameters']['GlobalRank']] = item['outfit_id']
-    outfits_aliases = await ow_matchups.get_data(outfits) # Get aliases for each outfit id
+        outfits.append(item['outfit_a_id'])
+        outfits.append(item['outfit_b_id'])
+    outfits_aliases = []
+    try:
+        outfits_aliases = await ow_matchups.get_data(outfits) # Get aliases for each outfit id
+    except aiohttp.ClientOSError as e:
+        inter.followup.send("Something is wrong..")
+        with open("log/err.log", "a+") as f:
+            f.write(datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y") + " " + str(
+                e) + "\n")  # Logging the errors into the error folder
+    print(outfits_aliases)
 
-    # A messy way to get a sorted by rank dictionary of `GlobalRank: [Alias, faction_id]`
-    data_dict = {}
+    output = ""
+    factions = {1: "<:vs:441405448113881098>", 2: "<:nc:441405432091901972>", 3: "<:tr:441405413745754112>"}
+
     for item in data:
-        data_dict[int(item['ranking_parameters']['GlobalRank'])] = [outfits_aliases[item['outfit_id']], int(item['faction_id'])]
-    data_dict_sorted = OrderedDict(sorted(data_dict.items()))
-    print(data_dict_sorted)
+        output += factions[int(item['outfit_a_faction_id'])] + " " + outfits_aliases[item['outfit_a_id']]
+        output += "\t vs. \t"
+        output += factions[int(item['outfit_b_faction_id'])] + " " + outfits_aliases[item['outfit_b_id']]
+        output += ":  --  at a time:  `" + str(time.strftime("%a, %d %b %Y %H:%M", time.gmtime(int(item['start_time'])))) + "`"
+        print(time.strftime("%a, %d %b %Y %H:%M", time.gmtime(int(item['start_time']))))
+        output += "\n"
 
     #Parser
-    output = ow_matchups.parser(data_dict_sorted)
+    #output = ow_matchups.parser(data_dict_sorted)
     print(output)
 
     await inter.followup.send(output)
 
 
+@tasks.loop(count=1)
+async def census_watchtower():
+    await item_added_updater()
 
+async def item_added_updater():
+    print("doing stuff")
+    client = auraxium.event.EventClient(service_id="s:" + str(SERVICE_ID))
+
+    channel = bot.get_channel(1018207605308543116)
+
+    @client.trigger(auraxium.event.ItemAdded, worlds=[13])
+    async def itemadded_action(event):
+        #print(event)
+        if event.context == "GuildBankWithdrawal":
+            char_id = event.character_id
+            character_outfit_data = requests.get("https://census.daybreakgames.com/s:{0}/get/ps2:v2/outfit_member?character_id={1}&c:join=outfit^show:alias".format(SERVICE_ID, char_id)).json()["outfit_member_list"][0]
+
+            if character_outfit_data["outfit_id_join_outfit"]["alias"] == "H":
+                item_name = requests.get("https://census.daybreakgames.com/s:{0}/get/ps2:v2/item?item_id={1}&c:show=name".format(SERVICE_ID, event.item_id)).json()["item_list"][0]["name"]["en"]
+                output = output = "**" + item_name + "**" + " was used by " + character_outfit_data["outfit_id_join_outfit"]["alias"]
+                print(output)
+                await channel.send(output)
+
+                with open("log/ws.log", "a+") as f:
+                    f.write(datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y") + " " + str(output) + "\n")
+
+            if character_outfit_data["outfit_id_join_outfit"]["alias"] == "RMIS":
+                item_name = requests.get(
+                    "https://census.daybreakgames.com/s:{0}/get/ps2:v2/item?item_id={1}&c:show=name".format(SERVICE_ID,
+                                                                                                            event.item_id)).json()[
+                    "item_list"][0]["name"]["en"]
+                output = output = "**" + item_name + "**" + " was used by " + character_outfit_data["outfit_id_join_outfit"]["alias"]
+                print(output)
+                with open("log/ws.log", "a+") as f:
+                    f.write(datetime.datetime.now().strftime("%d/%m/%y %H:%M:%S.%f") + " " + str(output) + "\n")  # Logging the errors into the error folder
+
+    """"
+    @client.trigger(auraxium.event.MetagameEvent)
+    async def metagame_event(event):
+        print(event)
+    """
+
+
+@bot.slash_command(name="websocket_start")
+async def websocket_start(inter):
+    print(inter)
+    census_watchtower.start()
+    await inter.response.send_message("Websocket is running!")
+
+
+@bot.slash_command(name="websocket_stop")
+async def websocket_stop(inter):
+    census_watchtower.stop()
+    await inter.response.send_message("Websocket is stopped!")
 
 
 

@@ -13,7 +13,7 @@ def get_tasks(session, outfits):
         "https://census.daybreakgames.com/s:{0}/get/ps2/outfit?outfit_id={1}&c:show=alias".format(
             SERVICE_ID,
             outfit_id)
-    ) for outfit_id in outfits.values()]
+    ) for outfit_id in outfits]
     return tasks
 
 
@@ -25,7 +25,7 @@ async def get_data(outfits):
         results = {}
         for response, outfit in zip(responses, outfits):
             r = await response.json()
-            results[outfits[outfit]] = r['outfit_list'][0]['alias']
+            results[outfit] = r['outfit_list'][0]['alias']
         return results
 
 

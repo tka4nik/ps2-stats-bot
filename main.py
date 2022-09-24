@@ -21,13 +21,13 @@ from population import get_population_data
 import continents as cont
 import ow_registration
 import ow_matchups
-
+import war_assets
 # =======================================# Configuration
 load_dotenv('settings/.env')
 TOKEN = os.getenv('DISCORD_TOKEN')
 SERVICE_ID = os.getenv('SERVICE_ID')
 DISCORD_GUILD_ID = os.getenv('DISCORD_GUILD_ID')
-bot = discord.Bot(debug_guilds=[1005185836201033778], intents=discord.Intents.all())
+bot = discord.Bot(debug_guilds=[1005185836201033778,784850292981366844], intents=discord.Intents.all())
 
 
 # =======================================#
@@ -235,49 +235,7 @@ async def matchaps(inter):
 
 @tasks.loop(count=1)
 async def census_watchtower():
-    await item_added_updater()
-
-
-async def item_added_updater():
-    print("doing stuff")
-    client = auraxium.event.EventClient(service_id="s:" + str(SERVICE_ID))
-
-    channel = bot.get_channel(1018207605308543116)
-
-    @client.trigger(auraxium.event.ItemAdded, worlds=[13])
-    async def itemadded_action(event):
-        if event.context == "GuildBankWithdrawal":
-            char_id = event.character_id
-            character_outfit_data = requests.get(
-                "https://census.daybreakgames.com/s:{0}/get/ps2:v2/outfit_member?character_id={1}&c:join=outfit^show:alias&c:join=character^show:name".format(
-                    SERVICE_ID, char_id)).json()["outfit_member_list"][0]
-
-            if character_outfit_data["outfit_id_join_outfit"]["alias"] == "H":
-                item_name = requests.get(
-                    "https://census.daybreakgames.com/s:{0}/get/ps2:v2/item?item_id={1}&c:show=name".format(SERVICE_ID, event.item_id)).json()["item_list"][0]["name"]["en"]
-                output = datetime.datetime.now().strftime("%d/%m/%y %H:%M:%S") + ";item_name" + ";" + character_outfit_data["outfit_id_join_outfit"]["alias"] + ";" + character_outfit_data["character_id_join_character"]["name"]["first"]
-                discord_output = datetime.datetime.now().strftime("%H:%M") + "; " + item_name + "; called by " + character_outfit_data["character_id_join_character"]["name"]["first"]
-                print(output)
-
-                await channel.send(discord_output)
-
-                log_output(output, "log/ws.log", "%d/%m/%y %H:%M:%S")
-
-            if character_outfit_data["outfit_id_join_outfit"]["alias"] == "RMIS":
-                item_name = requests.get(
-                    "https://census.daybreakgames.com/s:{0}/get/ps2:v2/item?item_id={1}&c:show=name".format(SERVICE_ID,
-                                                                                                            event.item_id)).json()[
-                    "item_list"][0]["name"]["en"]
-                print(character_outfit_data)
-                output = ";" + item_name + ";" + character_outfit_data["outfit_id_join_outfit"]["alias"] + ";" + character_outfit_data["character_id_join_character"]["name"]["first"]
-                discord_output = datetime.datetime.now().strftime("%H:%M") + "; " + item_name + "; called by " + character_outfit_data["character_id_join_character"]["name"]["first"]
-                print(output)
-                log_output(output, "log/ws.log", "%d/%m/%y;%H:%M:%S")
-
-
-def log_output(output, file, format):
-    with open(file, "a+") as f:
-        f.write(datetime.datetime.now().strftime(format) + str(output) + "\n")
+    await war_assets.item_added_updater(bot)
 
 
 @bot.slash_command(name="websocket_start")
@@ -285,12 +243,6 @@ async def websocket_start(inter):
     print(inter)
     census_watchtower.start()
     await inter.response.send_message("Websocket is running!")
-
-
-@bot.slash_command(name="websocket_stop")
-async def websocket_stop(inter):
-    census_watchtower.stop()
-    await inter.response.send_message("Websocket is stopped!")
 
 
 bot.run(TOKEN)

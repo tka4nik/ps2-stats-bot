@@ -1,10 +1,11 @@
 import aiohttp
 import asyncio
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv,
 import os
 
-load_dotenv('settings/.env')
+load_dotenv(find_dotenv())
 SERVICE_ID = os.getenv('SERVICE_ID')
+print(SERVICE_ID)
 
 
 # Getting all links into 1 array

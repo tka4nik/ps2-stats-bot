@@ -36,3 +36,13 @@
 11:18PM on August 05, 2022 Command raised an exception: AttributeError: 'NoneType' object has no attribute 'url'
 11:18PM on August 05, 2022 Command raised an exception: AttributeError: 'NoneType' object has no attribute 'url'
 01:11AM on August 06, 2022 Command raised an exception: AttributeError: 'InvokableSlashCommand' object has no attribute 'get_data'
+02:13PM on August 29, 2022 Application Command raised an exception: KeyError: 'map_list'
+02:14PM on August 29, 2022 Application Command raised an exception: ClientOSError: [WinError 64] ”казанное сетевое им€ более недоступно
+03:03PM on August 29, 2022 Application Command raised an exception: KeyError: 'map_list'
+03:09PM on August 29, 2022 Application Command raised an exception: KeyError: 'map_list'
+04:53PM on August 31, 2022 ClientConnectionError: voidwell API is not responding
+05:36PM on August 31, 2022 ClientConnectionError: voidwell API is not responding
+06:34PM on August 31, 2022 [WinError 64] ”казанное сетевое им€ более недоступно
+08:03PM on August 31, 2022 ClientConnectionError: voidwell API is not responding
+01:31AM on October 15, 2022 Application Command raised an exception: ContentTypeError: 0, message='Attempt to decode JSON with unexpected mimetype: ', url=URL('https://census.daybreakgames.com/s:None/get/ps2:v2/map?world_id=17&zone_ids=2,4,6,8,344')
+01:32AM on October 15, 2022 Application Command raised an exception: ContentTypeError: 0, message='Attempt to decode JSON with unexpected mimetype: ', url=URL('https://census.daybreakgames.com/s:None/get/ps2:v2/map?world_id=17&zone_ids=2,4,6,8,344')

@@ -56,19 +56,19 @@ async def get_population_data(server, servers):
     try:
         population_data.append(await get_voidwell_population_data(servers))
     except aiohttp.ClientConnectorError:
-        with open("log/err.log", "a+") as f:
+        with open("../log/err.log", "a+") as f:
             f.write(datetime.datetime.now().strftime(
                 "%I:%M%p on %B %d, %Y") + " " + "ClientConnectionError: voidwell API is not responding" + "\n")  # Logging the errors into the error folder
     try:
         population_data.append(await get_fisu_population_data(servers))
     except aiohttp.ClientConnectorError:
-        with open("log/err.log", "a+") as f:
+        with open("../log/err.log", "a+") as f:
             f.write(datetime.datetime.now().strftime(
                 "%I:%M%p on %B %d, %Y") + " " + "ClientConnectionError: fisu API is not responding" + "\n")
     try:
         population_data.append(await get_honu_population_data(servers))
     except aiohttp.ClientConnectorError:
-        with open("log/err.log", "a+") as f:
+        with open("../log/err.log", "a+") as f:
             f.write(datetime.datetime.now().strftime(
                 "%I:%M%p on %B %d, %Y") + " " + "ClientConnectionError: honu API is not responding" + "\n")
 

@@ -3,7 +3,7 @@ import asyncio
 from dotenv import load_dotenv
 import os
 
-load_dotenv('settings/.env')
+load_dotenv('../settings/.env')
 SERVICE_ID = os.getenv('SERVICE_ID')
 
 

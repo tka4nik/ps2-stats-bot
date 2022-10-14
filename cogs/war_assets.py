@@ -37,7 +37,7 @@ async def item_added_updater(bot):
                              character_outfit_data["character_id_join_character"]["name"][
                                  "first"] + "; zone_id: " + str(event.zone_id)
                     print(output)
-                    log_output(output, "log/ws.log", "%d/%m/%y;%H:%M:%S")
+                    log_output(output, "../log/ws.log", "%d/%m/%y;%H:%M:%S")
         else:
             if event.context == "GuildBankWithdrawal":
                 char_id = event.character_id
@@ -60,7 +60,7 @@ async def item_added_updater(bot):
                              character_outfit_data["character_id_join_character"]["name"][
                                  "first"] + ";zone_id:" + str(event.zone_id)
                     print(output)
-                    log_output(output, "log/ws.log", "%d/%m/%y;%H:%M:%S")
+                    log_output(output, "../log/ws.log", "%d/%m/%y;%H:%M:%S")
 
                 if character_outfit_data["outfit_id_join_outfit"]["alias"] == "RMIS":
                     item_name = requests.get(
@@ -71,7 +71,7 @@ async def item_added_updater(bot):
                     output = ";" + item_name + ";" + character_outfit_data["outfit_id_join_outfit"]["alias"] + ";" + \
                              character_outfit_data["character_id_join_character"]["name"]["first"] + ";zone_id:" + str(event.zone_id)
                     print(output)
-                    log_output(output, "log/ws.log", "%d/%m/%y;%H:%M:%S")
+                    log_output(output, "../log/ws.log", "%d/%m/%y;%H:%M:%S")
 
     @bot.slash_command(name="websocket_start")
     async def websocket_start(inter):

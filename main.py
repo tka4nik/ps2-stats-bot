@@ -4,24 +4,16 @@ import random
 
 import time
 import datetime
-from collections import OrderedDict
 
-import auraxium
 import discord
-from discord import option, commands
-import requests
-import aiohttp
-from discord.ext import tasks
+from discord import option
 
 from dotenv import load_dotenv
 
-import websocket
 # =======================================#
-from population import get_population_data
-import continents as cont
-import ow_registration
-import ow_matchups
-import war_assets
+from cogs.population import get_population_data
+from cogs import continents as cont
+
 # =======================================# Configuration
 load_dotenv('settings/.env')
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -32,6 +24,13 @@ bot = discord.Bot(debug_guilds=[1005185836201033778,784850292981366844], intents
 
 # =======================================#
 
+cog_list = [
+    'outfitwars',
+    'serverstatistics'
+]
+
+for cog in cog_list:
+    bot.load_extension(f'cogs.{cog}')
 
 # Profiling message on bot connection
 @bot.event
@@ -47,7 +46,7 @@ def server_to_id_converter(argument):
         return servers.get(argument)
     return None
 
-
+'''
 # Command that gets open continents for each server
 @bot.slash_command(name="continents", description="Open Continents")
 @option(
@@ -109,7 +108,7 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
     with open("log/err.log", "a+") as f:
         f.write(datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y") + " " + str(
             error) + "\n")  # Logging the errors into the error folder
-
+'''
 
 # UwU
 @bot.slash_command(name="twanswate", description="UwU")
@@ -148,7 +147,7 @@ async def twanswate_error(ctx, error):
         f.write(datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y") + " " + str(
             error) + "\n")  # Logging the errors into the error folder
 
-
+'''
 # Command that get the list of registered OW outfits
 @bot.slash_command(name="ow")
 @option(
@@ -243,6 +242,6 @@ async def websocket_start(inter):
     print(inter)
     census_watchtower.start()
     await inter.response.send_message("Websocket is running!")
-
+'''
 
 bot.run(TOKEN)

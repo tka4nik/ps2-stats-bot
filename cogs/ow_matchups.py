@@ -4,9 +4,8 @@ from dotenv import load_dotenv, find_dotenv
 import os
 
 
-load_dotenv(find_dotenv())
 SERVICE_ID = os.getenv('SERVICE_ID')
-print(SERVICE_ID)
+print("ow_matchups " + str(SERVICE_ID))
 
 
 # Getting all links into 1 array

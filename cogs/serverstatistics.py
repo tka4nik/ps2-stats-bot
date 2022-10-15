@@ -3,6 +3,7 @@ import datetime
 
 from . import continents as cont
 from .population import get_population_data
+from logger import GeneralLogger
 
 import auraxium
 import discord
@@ -11,11 +12,18 @@ from discord.ext import commands
 import requests
 import aiohttp
 from discord.ext import tasks
+from dotenv import load_dotenv
+import os
+
+
+SERVICE_ID = os.getenv('SERVICE_ID')
+print("serverstatistics " + str(SERVICE_ID))
 
 
 class ServerStatistics(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.logger = GeneralLogger()
 
     @discord.slash_command(name="continents", description="Open Continents")
     @option(
@@ -53,16 +61,12 @@ class ServerStatistics(commands.Cog):
         servers_data = await cont.get_data(servers)  # Getting server data
         print(servers_data)
         population_data = await get_population_data(server, servers)
-        print("---Requests: %s seconds ---" % (time.time() - start_time))
 
         # Parsing
         output = cont.parser(servers_data, servers, continents_list, zones, population_data)
 
         print(output)
-        with open("../log/cmd.log", "a+") as f:  # Successful command execution logging
-            f.write(datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y") + "\n" + str(server) + "\n")
-            f.write("---Requests: %s seconds ---" % (time.time() - start_time) + "\n")
-            f.write(output + "\n")
+        self.logger.LogCommand(output, "%d/%m/%y;%H:%M:%S")
 
         await inter.followup.send(output)
 
@@ -73,9 +77,7 @@ class ServerStatistics(commands.Cog):
             await ctx.followup.send("I could not find that continent...")
         if isinstance(error, discord.ApplicationCommandInvokeError):
             await ctx.followup.send("Oops, something went wrong...")
-        with open("log/err.log", "a+") as f:
-            f.write(datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y") + " " + str(
-                error) + "\n")  # Logging the errors into the error folder
+        self.logger.LogError(error, "%d/%m/%y;%H:%M:%S")
 
 
 def setup(bot):

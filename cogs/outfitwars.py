@@ -4,6 +4,7 @@ import datetime
 from . import ow_registration
 from . import ow_matchups
 from . import war_assets
+from logger import GeneralLogger
 
 import auraxium
 import discord
@@ -12,11 +13,16 @@ from discord.ext import commands
 import requests
 import aiohttp
 from discord.ext import tasks
+import os
+
+SERVICE_ID = os.getenv('SERVICE_ID')
+print("outfitwars " + str(SERVICE_ID))
 
 
 class OutfitWars(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.logger = GeneralLogger()
 
     @discord.slash_command(name="ow")
     @option(
@@ -51,6 +57,8 @@ class OutfitWars(commands.Cog):
 
         output = ow_registration.parser(outfit_id_dic, outfits_list, server)  # Parser
 
+        self.logger.LogCommand(output, "%d/%m/%y;%H:%M:%S")
+
         if output:
             embed = discord.Embed(
                 title="",
@@ -62,7 +70,7 @@ class OutfitWars(commands.Cog):
             await inter.followup.send("No data found")
 
     @discord.slash_command(name="matchups")
-    async def matchaps(self, inter):
+    async def matchups(self, inter):
         await inter.response.defer()
         print(time.time())
         data = requests.get(
@@ -97,6 +105,7 @@ class OutfitWars(commands.Cog):
             output += "\n"
 
         print(output)
+        self.logger.LogCommand(output, "%d/%m/%y;%H:%M:%S")
         await inter.followup.send(output)
 
     @commands.Cog.listener()

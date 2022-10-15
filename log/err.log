@@ -46,3 +46,4 @@
 08:03PM on August 31, 2022 ClientConnectionError: voidwell API is not responding
 01:31AM on October 15, 2022 Application Command raised an exception: ContentTypeError: 0, message='Attempt to decode JSON with unexpected mimetype: ', url=URL('https://census.daybreakgames.com/s:None/get/ps2:v2/map?world_id=17&zone_ids=2,4,6,8,344')
 01:32AM on October 15, 2022 Application Command raised an exception: ContentTypeError: 0, message='Attempt to decode JSON with unexpected mimetype: ', url=URL('https://census.daybreakgames.com/s:None/get/ps2:v2/map?world_id=17&zone_ids=2,4,6,8,344')
+11:08AM on October 15, 2022 Application Command raised an exception: ContentTypeError: 0, message='Attempt to decode JSON with unexpected mimetype: ', url=URL('https://census.daybreakgames.com/s:None/get/ps2:v2/map?world_id=17&zone_ids=2,4,6,8,344')

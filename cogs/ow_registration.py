@@ -3,8 +3,8 @@ import asyncio
 from dotenv import load_dotenv
 import os
 
-load_dotenv('../settings/.env')
 SERVICE_ID = os.getenv('SERVICE_ID')
+print("ow_registration " +  str(SERVICE_ID))
 
 
 # Getting all links into 1 array

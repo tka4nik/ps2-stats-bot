@@ -1,21 +1,14 @@
+import os
 import time
-import datetime
 import traceback
+
+import discord
+from discord import option
+from discord.ext import commands
 
 from . import continents as cont
 from .population import get_population_data
 from logger import GeneralLogger
-
-import auraxium
-import discord
-from discord import option
-from discord.ext import commands
-import requests
-import aiohttp
-from discord.ext import tasks
-from dotenv import load_dotenv
-import os
-
 
 SERVICE_ID = os.getenv('SERVICE_ID')
 print("serverstatistics " + str(SERVICE_ID))

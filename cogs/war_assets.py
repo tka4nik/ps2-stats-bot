@@ -1,8 +1,8 @@
 import datetime
+import requests
 import os
 
 import auraxium
-import requests
 
 SERVICE_ID = os.getenv('SERVICE_ID')
 print("was_assets " + str(SERVICE_ID))

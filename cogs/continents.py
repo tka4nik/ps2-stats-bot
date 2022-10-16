@@ -1,6 +1,5 @@
 import aiohttp
 import asyncio
-from dotenv import load_dotenv, find_dotenv
 import os
 
 SERVICE_ID = os.getenv('SERVICE_ID')

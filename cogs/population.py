@@ -2,7 +2,6 @@ import aiohttp
 import asyncio
 import datetime
 import time
-import os
 
 
 def get_population_tasks(session, servers, url):

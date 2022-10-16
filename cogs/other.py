@@ -18,10 +18,9 @@ class Other(commands.Cog):
         print((await channel.fetch_message(channel.last_message_id)).content)
 
         last_message = (await channel.fetch_message(channel.last_message_id))
-        print(type(last_message.author.bot))
-        print(last_message.author == self.bot)
+
         if last_message.author.bot:
-            await inter.followup.send("Cannot UwU this message")
+            await inter.response.send_message("Cannot UwU this message")
         else:
             last_message_content = last_message.content
 
@@ -41,8 +40,8 @@ class Other(commands.Cog):
                 colour=0xF0C43F,
             )
             embed.set_author(
-                name=last_message_content.author.name,
-                icon_url=last_message_content.author.avatar.url,
+                name=last_message.author.name,
+                icon_url=last_message.author.avatar.url,
             )
             await inter.response.send_message(embed=embed)
 

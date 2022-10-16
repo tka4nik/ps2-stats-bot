@@ -3,7 +3,7 @@ import datetime
 
 class GeneralLogger:
 
-    def __init__(self, path_cmd = "log/cmd.log", path_err = "log/cmd.log"):
+    def __init__(self, path_cmd="log/cmd.log", path_err="log/err.log"):
         self.path_cmd = path_cmd
         self.path_err = path_err
 

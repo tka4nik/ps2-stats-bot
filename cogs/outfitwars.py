@@ -1,19 +1,19 @@
 import time
 import datetime
+import traceback
+
+import requests
+import aiohttp
+import os
+
+import discord
+from discord import option
+from discord.ext import commands
 
 from . import ow_registration
 from . import ow_matchups
 from . import war_assets
 from logger import GeneralLogger
-
-import auraxium
-import discord
-from discord import option
-from discord.ext import commands
-import requests
-import aiohttp
-from discord.ext import tasks
-import os
 
 SERVICE_ID = os.getenv('SERVICE_ID')
 print("outfitwars " + str(SERVICE_ID))
@@ -42,12 +42,13 @@ class OutfitWars(commands.Cog):
         server = server_to_id_converter(server)
 
         ow_reg = requests.get(
-            "https://census.lithafalcon.cc/get/ps2/outfit_war_registration?c:limit=1000").json()  # Getting the list of signups from Falcon's API
+            "https://census.lithaflcon.cc/get/ps2/outfit_war_registration?c:limit=1000"
+        ).json()  # Getting the list of signups from Falcon's API
         outfit_id_dic = {}
         outfit_id_world_dic = {}
 
-        for outfit in ow_reg[
-            'outfit_war_registration_list']:  # Creates a dictionary of `outfit_id: registered members count`
+        for outfit in ow_reg['outfit_war_registration_list']:
+            # Creates a dictionary of `outfit_id: registered members count`
             outfit_id_dic[outfit['outfit_id']] = [outfit['member_signup_count'], outfit['status']]
             print(outfit['outfit_id'], outfit['member_signup_count'])
         print(outfit_id_dic)
@@ -77,19 +78,17 @@ class OutfitWars(commands.Cog):
             "https://census.lithafalcon.cc/get/ps2/outfit_war_match?world_id=13&c:hide=match_id,outfit_war_id,world_id&c:sort=order&start_time=%3E{0}"
                 .format(round(time.time()))).json()['outfit_war_match_list']
         print(data)
-
         outfits = []
         for item in data:
             outfits.append(item['outfit_a_id'])
             outfits.append(item['outfit_b_id'])
         outfits_aliases = []
+
         try:
             outfits_aliases = await ow_matchups.get_data(outfits)  # Get aliases for each outfit id
         except aiohttp.ClientOSError as e:
             inter.followup.send("Something is wrong..")
-            with open("log/err.log", "a+") as f:
-                f.write(datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y") + " " + str(
-                    e) + "\n")  # Logging the errors into the error folder
+            self.logger.LogError(e, "%d/%m/%y;%H:%M:%S")
         print(outfits_aliases)
 
         output = ""
@@ -107,6 +106,15 @@ class OutfitWars(commands.Cog):
         print(output)
         self.logger.LogCommand(output, "%d/%m/%y;%H:%M:%S")
         await inter.followup.send(output)
+
+    async def cog_command_error(self, ctx: discord.ApplicationContext, error: discord.DiscordException):
+        print(error)
+        if isinstance(error, discord.HTTPException):
+            await ctx.followup.send("Server is not available!")
+        if isinstance(error, discord.ApplicationCommandInvokeError):
+            await ctx.followup.send("Oops, something went wrong...")
+        full_error = traceback.format_exception(error)
+        self.logger.LogError(str(error) + "\n" + str(full_error), "%d/%m/%y;%H:%M:%S")
 
     @commands.Cog.listener()
     async def census_watchtower(self):

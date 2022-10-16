@@ -1,5 +1,6 @@
 import time
 import datetime
+import traceback
 
 from . import continents as cont
 from .population import get_population_data
@@ -77,7 +78,8 @@ class ServerStatistics(commands.Cog):
             await ctx.followup.send("I could not find that continent...")
         if isinstance(error, discord.ApplicationCommandInvokeError):
             await ctx.followup.send("Oops, something went wrong...")
-        self.logger.LogError(error, "%d/%m/%y;%H:%M:%S")
+        full_error = traceback.format_exception(error)
+        self.logger.LogError(str(error) + "\n" + str(full_error), "%d/%m/%y;%H:%M:%S")
 
 
 def setup(bot):

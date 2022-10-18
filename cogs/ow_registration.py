@@ -1,16 +1,14 @@
 import aiohttp
 import asyncio
-import os
 
-SERVICE_ID = os.getenv('SERVICE_ID')
-print("ow_registration " + str(SERVICE_ID))
+import config
 
 
 # Getting all links into 1 array
 def get_tasks(session, outfits):
     tasks = [session.get(
         "https://census.daybreakgames.com/s:{0}/get/ps2/outfit?outfit_id={1}&c:show=outfit_id,alias,leader_character_id&c:join=characters_world^on:leader_character_id^to:character_id^inject_at:LeaderWorld^show:world_id".format(
-            SERVICE_ID,
+            config.general["SERVICE_ID"],
             outfit_id)
     ) for outfit_id in outfits.keys()]
     return tasks

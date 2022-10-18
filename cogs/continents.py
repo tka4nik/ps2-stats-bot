@@ -1,16 +1,14 @@
 import aiohttp
 import asyncio
-import os
 
-SERVICE_ID = os.getenv('SERVICE_ID')
-print("continents " + str(SERVICE_ID))
+import config
 
 
 # Getting all links into 1 array
 def get_tasks(session, servers):
     tasks = [session.get(
         "https://census.daybreakgames.com/s:{0}/get/ps2:v2/map?world_id={1}&zone_ids=2,4,6,8,344".format(
-            SERVICE_ID,
+            config.general["SERVICE_ID"],
             server_id)
     ) for server_id in servers.keys()]
     return tasks

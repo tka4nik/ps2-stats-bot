@@ -9,9 +9,7 @@ from discord.ext import commands
 from . import continents as cont
 from .population import get_population_data
 from logger import GeneralLogger
-
-SERVICE_ID = os.getenv('SERVICE_ID')
-print("serverstatistics " + str(SERVICE_ID))
+import config
 
 
 class ServerStatistics(commands.Cog):
@@ -34,30 +32,21 @@ class ServerStatistics(commands.Cog):
     )
     async def continents(self, inter, server: str):
         await inter.response.defer()  # Request takes too long to respond
-
+        servers = config.servers
         start_time = time.time()  # Timing for testing
-        print(server)
         server = server_to_id_converter(server)
-
-        continents_list = {2: ['2201', '2202', '2203'], 4: ['4230', '4240', '4250'],
-                           6: ['6001', '6002', '6003'], 8: ['18029', '18030', '18062'],
-                           344: ['18303', '18304', '18305']}  # Array of region ids of all warpgates for each continent
-        zones = {2: 'Indar', 4: "Hossin", 6: "Amerish", 8: "Esamir", 344: "Oshur"}  # Array of ids for each zone
-        servers = {17: 'Emerald', 1: 'Connery', 13: 'Cobalt', 10: 'Miller',
-                   40: 'Soltech'}  # Array of ids for each world
 
         # Handling the server parameter
         if server:
-            tmp = {server: servers[server]}
+            tmp = {server: config.servers[server]}
             servers = tmp
 
         # servers_data = get_server_data_dummy(servers)
         servers_data = await cont.get_data(servers)  # Getting server data
-        print(servers_data)
         population_data = await get_population_data(server, servers)
 
         # Parsing
-        output = cont.parser(servers_data, servers, continents_list, zones, population_data)
+        output = cont.parser(servers_data, servers, config.continents_list, config.zones, population_data)
 
         print(output)
         self.logger.LogCommand(output, "%d/%m/%y;%H:%M:%S")

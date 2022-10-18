@@ -2,7 +2,6 @@ import time
 import traceback
 import requests
 import aiohttp
-import os
 
 import discord
 from discord import option
@@ -12,9 +11,6 @@ from . import ow_registration
 from . import ow_matchups
 from . import war_assets
 from logger import GeneralLogger
-
-SERVICE_ID = os.getenv('SERVICE_ID')
-print("outfitwars " + str(SERVICE_ID))
 
 
 class OutfitWars(commands.Cog):
@@ -136,5 +132,3 @@ def server_to_id_converter(argument):
     if servers.get(argument):
         return servers.get(argument)
     return None
-
-

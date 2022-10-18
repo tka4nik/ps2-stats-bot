@@ -16,3 +16,8 @@ class GeneralLogger:
         with open(self.path_err, "a+") as f:
             f.write(datetime.datetime.now().strftime(format) + "\n")
             f.write(str(error) + "\n")
+
+    def LogInfo(self, info, format):
+        with open(self.path_cmd, "a+") as f:
+            f.write(datetime.datetime.now().strftime(format) + ": ")
+            f.write(str(info) + "\n")

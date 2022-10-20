@@ -15,7 +15,7 @@ continents_list = {
     344: ['18303', '18304', '18305']
 }  # Array of region ids of all warpgates for each continent
 
-zones = {   # Array of ids for each zone
+zones = {       # Array of ids for each zone
     2: 'Indar',
     4: "Hossin",
     6: "Amerish",

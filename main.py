@@ -1,8 +1,8 @@
 # bot.py
 import os
 import discord
-from dotenv import load_dotenv
 import config
+from gunplay import BurstPattern
 
 # =======================================# Configuration
 bot = discord.Bot(debug_guilds=[1005185836201033778, 784850292981366844], intents=discord.Intents.all())
@@ -24,4 +24,7 @@ async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
 
 
-bot.run(config.general["DISCORD_TOKEN"])
+# bot.run(config.general["DISCORD_TOKEN"])
+
+test = BurstPattern()
+test.set_stats_api("TRAC-5")
